@@ -13,12 +13,15 @@ defmodule Ring do
     end
   end
 
-  # Setup aggregator
+  # Entry point to link_process/2, sets up aggregator.
   def link_processes(procs), do: link_processes(procs, [])
 
-  # Matches only if there are at least two elements in a list
-  def link_processes([proc_1, proc_2 | rest], linked_processes) do
+  # Matches only if there are at least two elements in a list.
+  defp link_processes([proc_1, proc_2 | rest], linked_processes) do
+    # Links current process to the next process
     send(proc_1, {:link, proc_2})
+
+    # Recursively progresses through the procs list
     link_processes([proc_2 | rest], [proc_1|linked_processes])
   end
 
@@ -26,7 +29,7 @@ defmodule Ring do
   # the the last proc in order to create the ring. Interesting to note that
   # there are no matching functions if a user were to pass an empty list for
   # procs.
-  def link_processes([proc | []], linked_processes) do
+  defp link_processes([proc | []], linked_processes) do
     first_process = linked_processes |> List.last
     send(proc, {:link, first_process})
     :ok
